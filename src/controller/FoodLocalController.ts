@@ -64,7 +64,7 @@ export class FoodLocalController {
             product_name: string
             brands: string
             quantity: string
-            image_small_url: string
+            image_url: string
         }
 
         const newFood = foodExternal.product as foodValues
@@ -80,7 +80,7 @@ export class FoodLocalController {
         const foodLocal = Object.assign(new FoodLocal(), {
             id: newFood.id,
             name: fullname,
-            picture: newFood.image_small_url
+            picture: newFood.image_url
         })
 
         const createdFoodLocal = await this.foodLocalRepository.save(foodLocal)

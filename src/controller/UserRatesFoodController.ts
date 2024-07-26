@@ -18,11 +18,12 @@ export class UserRatesFoodController {
         const userRate = await this.UserRatesFoodRepository.findOne({
             where: { userId: userId,
                      foodLocalId: foodLocalId
-                    }
+                    }   
         })
-
+        console.log("hola", userRate)
         if (!userRate) {
-            return undefined
+            console.log("pew")
+            return []
         }
         return userRate
     }
@@ -50,8 +51,8 @@ export class UserRatesFoodController {
     }
     // cantidad de likes y dislikes de un alimento en específico
     async ratingsByFood(id: string, res: Response){
-        const likes = await this.UserRatesFoodRepository.countBy({foodLocalId: id, rating: "like"})
-        const dislikes = await this.UserRatesFoodRepository.countBy({foodLocalId: id, rating: "dislike"})
+        const likes = await this.UserRatesFoodRepository.countBy({foodLocalId: id, rating: "likes"})
+        const dislikes = await this.UserRatesFoodRepository.countBy({foodLocalId: id, rating: "dislikes"})
         const ratings: {likes: number, dislikes: number} = {
             likes: likes,
             dislikes: dislikes
@@ -59,15 +60,10 @@ export class UserRatesFoodController {
         return ratings
     }
     // agregar o actualizar registro. si el usuario retracta su like o dislike, se borra el registro existente
-    async create(request, res: Response) {
-        if (request.body.rating == "neutral"){
-            return this.remove(request.body.userId, request.body.foodLocalId, res)
+    async create(userRate) {
+        if (userRate.rating == "neutral"){
+            return this.remove(userRate.userId, userRate.foodLocalId)
         }
-        const userRate = Object.assign(new UserRatesFood(), {
-            userId: request.body.userId,
-            foodLocalId: request.body.foodLocalId,
-            rating: request.body.rating
-        })
         const newUserRate = await this.UserRatesFoodRepository.save(userRate)
         if (!newUserRate){
             return undefined
@@ -75,16 +71,14 @@ export class UserRatesFoodController {
         return newUserRate
     }
     // eliminar un registro por id de usuario e id de alimento
-    async remove(userId: string, foodLocalId, res: Response) {
+    async remove(userId: string, foodLocalId) {
         let userRateToRemove = await this.UserRatesFoodRepository.find({ where: {foodLocalId: foodLocalId, userId: userId }})
 
         if (userRateToRemove === undefined || userRateToRemove.length == 0) {
-            return "couldn't find user/food pair"
+            return undefined
         }
 
-        await this.UserRatesFoodRepository.remove(userRateToRemove)
-
-        return "user/food pair has been removed"
+        return this.UserRatesFoodRepository.delete({userId: userId, foodLocalId: foodLocalId})
     }
     // eliminar todos los registros de un alimento
     async removeByFood(id: string, res: Response) {
@@ -99,16 +93,13 @@ export class UserRatesFoodController {
         return "user/food pairs have been removed"
     }
     // eliminar todos los registros de un usuario
-    async removeByUser(id: string, res: Response) {
+    async removeByUser(id: string) {
         let userRateToRemove = await this.UserRatesFoodRepository.find({ where: {userId: id }})
 
         if (userRateToRemove === undefined || userRateToRemove.length == 0) {
-            return "couldn't find food rated by this user"
+            return undefined
         }
 
-        await this.UserRatesFoodRepository.remove(userRateToRemove)
-
-        return "user/food pairs have been removed"
+        return this.UserRatesFoodRepository.remove(userRateToRemove)
     }
-
 }
