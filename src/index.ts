@@ -6,6 +6,7 @@ import { Routes } from "./routes"
 import * as amqp from "amqplib/callback_api"
 import { Channel } from "amqplib"
 import { UserRatesFoodController } from "./controller/UserRatesFoodController"
+import { Additive } from "./entity/Additive"
 
 AppDataSource.initialize().then(async () => {
     amqp.connect('amqps://zqjaujdb:XeTIDvKuWz8bHL5DHdJ9iq6e4CqkfqTh@gull.rmq.cloudamqp.com/zqjaujdb', (error0, connection) => {
@@ -33,7 +34,7 @@ AppDataSource.initialize().then(async () => {
             app.use(bodyParser.json())
             var cors = require('cors');
             const corsOptions = {
-                origin: 'http://192.168.100.6:4000',
+                origin: ['http://192.168.100.6:4000', 'http://localhost:4000'],
                 methods: ['POST', 'GET', 'PATCH', 'DELETE'],
                 allowedHeaders: ['Content-Type', 'Authorization', "Access-Control-Allow-Origin", "cookies", "set-cookies"]
             }
@@ -85,8 +86,32 @@ AppDataSource.initialize().then(async () => {
             }, {noAck: true})
 
             // setup express app here
-            // ...
 
+            // ******************* Poblado de la tabla de aditivos *****************
+            
+            // const additives = require('../additives.json')
+            // const additiveRepo = AppDataSource.getRepository(Additive)
+            // for (const [code, value] of Object.entries(additives)){
+            //     let name = value["name"]["es"]?value["name"]["es"]:null
+            //     let vegan = false
+            //     let vegetarian = false
+            //     if (value["vegan"] && value["vegan"]["en"]==="yes"){
+            //         vegan = true
+            //     }
+            //     if (value["vegetarian"] && value["vegetarian"]["en"]==="yes"){
+            //         vegetarian = true
+            //     }
+            //     let wikidata = value["wikidata"]?value["wikidata"]["en"]:null
+            //     let newAdditive = {
+            //         id: code,
+            //         name: name,
+            //         vegan: vegan,
+            //         vegetarian: vegetarian,
+            //         wikidata: wikidata
+            //     }
+            //     additiveRepo.save(newAdditive)
+            // }
+            
             // start express server
             app.listen(3001)
 
