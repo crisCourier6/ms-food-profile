@@ -62,8 +62,15 @@ AppDataSource.initialize().then(async () => {
                         console.log(result)
                     })
                 }
-                else if (action=="remove"){
+                else if (action=="removeOne"){
                     await userRatesFoodController.remove(content.userId, content.foodLocalId)
+                    .then(result=>{
+                        console.log(result)
+                    })
+                }
+                else if (action=="remove"){
+                    console.log("i should delete all rows with userId = ", content)
+                    await userRatesFoodController.removeByUser(content)
                     .then(result=>{
                         console.log(result)
                     })

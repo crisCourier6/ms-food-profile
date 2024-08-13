@@ -23,7 +23,7 @@ export class UserRatesFoodController {
         console.log("hola", userRate)
         if (!userRate) {
             console.log("pew")
-            return []
+            return undefined
         }
         return userRate
     }
@@ -45,7 +45,7 @@ export class UserRatesFoodController {
         })
         console.log(userRate)
         if (userRate === undefined || userRate.length == 0){
-            return "user/food pair doesn't exist"
+            return []
         }
         return userRate
     }
@@ -59,16 +59,26 @@ export class UserRatesFoodController {
         }
         return ratings
     }
-    // agregar o actualizar registro. si el usuario retracta su like o dislike, se borra el registro existente
+    // agregar o actualizar registro.
     async create(userRate) {
-        if (userRate.rating == "neutral"){
-            return this.remove(userRate.userId, userRate.foodLocalId)
+        const oldUserRate = await this.UserRatesFoodRepository.findOne({ where: 
+            {userId: userRate.userId, 
+            foodLocalId: userRate.foodLocalId,
+            rating: userRate.rating
+        }})
+        if (oldUserRate){
+            console.log("ya existe", oldUserRate)
+            return []
         }
-        const newUserRate = await this.UserRatesFoodRepository.save(userRate)
-        if (!newUserRate){
-            return undefined
+        else {
+            console.log("n oexistia")
+            const newUserRate = await this.UserRatesFoodRepository.save(userRate)
+                if (!newUserRate){
+                    return []
+                }
+                return newUserRate
         }
-        return newUserRate
+        
     }
     // eliminar un registro por id de usuario e id de alimento
     async remove(userId: string, foodLocalId) {

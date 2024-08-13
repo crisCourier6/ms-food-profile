@@ -68,8 +68,8 @@ export class FoodLocalController {
         }
 
         const newFood = foodExternal.product as foodValues
-
         let fullname = newFood.product_name
+        
         if(newFood.brands){
             fullname = fullname + " - " + newFood.brands.split(",")[0]
         }

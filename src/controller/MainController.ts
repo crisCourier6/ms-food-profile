@@ -53,10 +53,10 @@ export class MainController{
         
     }
     async userRatesFoodRemove(request: Request, response: Response, next: NextFunction, channel:Channel){
-        await this.userRatesFoodController.remove(request.body.userId, request.body.foodLocalId)
+        await this.userRatesFoodController.remove(request.params.userId, request.params.foodLocalId)
         .then(result => {
             if (result){
-                channel.publish("FoodProfile", "user-rates-food.remove", Buffer.from(JSON.stringify(request.body)))
+                channel.publish("FoodProfile", "user-rates-food.removeOne", Buffer.from(JSON.stringify(request.params)))
             }
             else{
                 response.status(400)
@@ -76,7 +76,6 @@ export class MainController{
     // open food facts
     async foodExternalOne(request: Request, response: Response, next: NextFunction, channel:Channel){
         const food = await this.foodExternalController.one(request.params.foodExternalId, response)
-        console.log(food)
         await this.foodLocalController.save(request.params.foodExternalId, food, response)
         return food
     }

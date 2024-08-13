@@ -9,8 +9,9 @@ axios.defaults.baseURL = "https://world.openfoodfacts.net/api/v2/"
 // https://openfoodfacts.github.io/openfoodfacts-server/api/ref-v2/#get-/api/v2/product/-barcode-
 const fields = "id,product_name,brands,nutriments,nutrient_levels,allergens_tags,\
                 environment_impact_level,nutriscore_grade,ecoscore_grade,\
-                ingredients_text,quantity,serving_quantity,serving_size,traces_tags"
-const moreFields = "image_nutrition_url,image_url,image_packaging_url,image_ingredients_url,nova_group,nutriscore_2023_tags,additives_tags"
+                quantity,serving_quantity,serving_size,traces_tags"
+const moreFields = "image_nutrition_url,image_url,image_packaging_url,image_ingredients_url,\
+                    nova_group,nutriscore_2023_tags,additives_tags,ingredients_text"
 
 
 export class FoodExternalController {
@@ -32,19 +33,28 @@ export class FoodExternalController {
                 method: "GET",
                 url: "product/" + id + "?fields=" + moreFields
             })
+            response.data.product.product_name
+                ? null
+                : response.data.product.product_name= "Nombre desconocido"
             response2.data.product.nutriscore_2023_tags
                 ?response2.data.product.nutriscore_grade = response2.data.product.nutriscore_2023_tags[0]
                 :null
+            response2.data.product.nova_group
+                ? null
+                : response2.data.product.nova_group = response.data.product.nutriments["nova-group"]
             response.data.product = {...response.data.product, ...response2.data.product}
-            let additiveList = response.data.product.additives_tags
+            let additiveList = []
+            response.data.product.additives_tags
+                ?additiveList = response.data.product.additives_tags
+                :null
             let additiveFinal = []
             for (var additiveCode of additiveList){
                 console.log(additiveCode)
                 let additive = await this.additiveRepository.findOne({where: {id:additiveCode}})
-                console.log(additive)
                 additiveFinal.push(additive.name + "," + additive.wikidata)
             }
             response.data.product.additives = additiveFinal
+            console.log(response.data)
             return response.data
         } catch (error){
             console.log(error)
