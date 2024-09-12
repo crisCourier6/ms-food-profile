@@ -76,11 +76,14 @@ export class FoodLocalController {
         if (newFood.quantity){
             fullname = fullname + " - " + newFood.quantity
         }
+
+        let foodData = JSON.stringify(foodExternal.product)
             
         const foodLocal = Object.assign(new FoodLocal(), {
             id: newFood.id,
             name: fullname,
-            picture: newFood.image_url
+            picture: newFood.image_url,
+            foodData: foodData
         })
 
         const createdFoodLocal = await this.foodLocalRepository.save(foodLocal)

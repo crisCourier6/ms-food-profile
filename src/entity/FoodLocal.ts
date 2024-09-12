@@ -13,6 +13,9 @@ export class FoodLocal {
     @Column({default: "defaultFood.png"})
     picture: string
 
+    @Column({nullable: true})
+    foodData: string
+
     @OneToMany(()=>UserRatesFood, userRatesFood=>userRatesFood.foodLocal)
     userRatesFood: UserRatesFood[]
 }

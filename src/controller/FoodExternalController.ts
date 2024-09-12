@@ -1,17 +1,18 @@
 import { AppDataSource } from "../data-source"
 import axios from "axios"
-import { Response } from "express"
+import { Response, Request } from "express"
 import { Additive } from "../entity/Additive"
+import "dotenv/config"
 
-axios.defaults.baseURL = "https://world.openfoodfacts.net/api/v2/"
+axios.defaults.baseURL = "https://world.openfoodfacts.net/"
 
 // fields contiene los campos que se obtendrán en la respuesta de la API de OpenFoodFacts
 // https://openfoodfacts.github.io/openfoodfacts-server/api/ref-v2/#get-/api/v2/product/-barcode-
 const fields = "id,product_name,brands,nutriments,nutrient_levels,allergens_tags,\
                 environment_impact_level,nutriscore_grade,ecoscore_grade,\
-                quantity,serving_quantity,serving_size,traces_tags"
+                serving_quantity,serving_size,traces_tags"
 const moreFields = "image_nutrition_url,image_url,image_packaging_url,image_ingredients_url,\
-                    nova_group,nutriscore_2023_tags,additives_tags,ingredients_text"
+                    nova_group,nutriscore_2023_tags,additives_tags,ingredients_text,quantity"
 
 
 export class FoodExternalController {
@@ -27,11 +28,11 @@ export class FoodExternalController {
         try {
             let response = await axios({
                 method: "GET",
-                url: "product/" + id + "?fields=" + fields
+                url: "api/v2/product/" + id + "?fields=" + fields
             })
             let response2 = await axios({
                 method: "GET",
-                url: "product/" + id + "?fields=" + moreFields
+                url: "api/v2/product/" + id + "?fields=" + moreFields
             })
             response.data.product.product_name
                 ? null
@@ -61,5 +62,29 @@ export class FoodExternalController {
             return false
         }
         
+    }
+    // save
+    async save(req: Request, res: Response) {
+        try{
+            let response = await axios({
+                method: "GET",
+                url: "cgi/product_jqm2.pl",
+                params: {
+                    ...req.body,
+                    user_id: process.env.OFF_USER,
+                    password: process.env.OFF_PASS
+                }
+            })
+            console.log(response)
+        } 
+        catch (error){
+            console.log(error)
+            res.status(500)
+            return false
+        }
+    }
+
+    async update(id: string, res: Response) {
+
     }
 }

@@ -24,7 +24,16 @@ export class MainController{
         return this.foodLocalController.update(request.params.foodLocalId, request.body, response)
     }
     async foodLocalRemove(request: Request, response: Response, next: NextFunction, channel:Channel){
-        return this.foodLocalController.remove(request.params.foodLocalId, response)
+        await this.foodLocalController.remove(request.params.foodLocalId, response)
+        .then(result => {
+            if (result){
+                channel.publish("FoodProfile", "food-local.remove", Buffer.from(JSON.stringify({id: request.params.foodLocalId})))
+            }
+            else{
+                response.status(400)
+            }
+            response.send(result)
+        })
     }
     // user rates food
     async userRatesFoodAll(request: Request, response: Response, next: NextFunction, channel:Channel) {
@@ -77,6 +86,14 @@ export class MainController{
     async foodExternalOne(request: Request, response: Response, next: NextFunction, channel:Channel){
         const food = await this.foodExternalController.one(request.params.foodExternalId, response)
         await this.foodLocalController.save(request.params.foodExternalId, food, response)
-        return food
+        .then(result => {
+            if (result){
+                channel.publish("FoodProfile", "food-local.save", Buffer.from(JSON.stringify(result)))
+            }
+            else{
+                response.status(400)
+            }
+            response.send(food)
+        })
     }
 }

@@ -6,6 +6,7 @@ import { Routes } from "./routes"
 import * as amqp from "amqplib/callback_api"
 import { Channel } from "amqplib"
 import { UserRatesFoodController } from "./controller/UserRatesFoodController"
+import { AdditiveController } from "./controller/AdditiveController"
 import { Additive } from "./entity/Additive"
 
 AppDataSource.initialize().then(async () => {
@@ -19,22 +20,31 @@ AppDataSource.initialize().then(async () => {
                 throw error1
             }
             const userRatesFoodController = new UserRatesFoodController
+            const additiveController = new AdditiveController
+            
             channel.assertExchange("FoodProfile", "topic", {durable: false})
 
             channel.assertExchange("UserProfile", "topic", {durable: false})
             channel.assertExchange("Accounts", "topic", {durable: false})
+            channel.assertExchange("FoodEdit", "topic", {durable: false})
 
             channel.assertQueue("FoodProfile_UserRatesFood", {durable: false})
             channel.bindQueue("FoodProfile_UserRatesFood", "UserProfile", "user-rates-food.*")
 
             channel.assertQueue("FoodProfile_Accounts", {durable: false})
             channel.bindQueue("FoodProfile_Accounts", "Accounts", "user.*")
+
+            channel.assertQueue("FoodProfile_FoodLocal", {durable: false})
+            channel.bindQueue("FoodProfile_FoodLocal", "FoodEdit", "food-local.*")
+
+            channel.assertQueue("FoodProfile_Additive", {durable: false})
+            channel.bindQueue("FoodProfile_Additive", "FoodEdit", "additive.*")
           
             const app = express()
             app.use(bodyParser.json())
             var cors = require('cors');
             const corsOptions = {
-                origin: ['http://192.168.100.6:4000', 'http://localhost:4000'],
+                origin: ['http://192.168.100.6:4000', 'http://localhost:4000', 'http://192.168.100.6:5000', 'http://localhost:5000'],
                 methods: ['POST', 'GET', 'PATCH', 'DELETE'],
                 allowedHeaders: ['Content-Type', 'Authorization', "Access-Control-Allow-Origin", "cookies", "set-cookies"]
             }
@@ -86,6 +96,29 @@ AppDataSource.initialize().then(async () => {
                 else if (action=="remove"){
                     console.log("i should delete all rows with userId = ", content)
                     await userRatesFoodController.removeByUser(content)
+                    .then(result=>{
+                        console.log(result)
+                    })
+                }
+            }, {noAck: true})
+
+            channel.consume("FoodProfile_Additive", async (msg)=>{
+                let action = msg.fields.routingKey.split(".")[1]
+                let content = JSON.parse(msg.content.toString())
+                if (action=="save"){
+                    await additiveController.save(content)
+                    .then(result => {
+                        console.log(result)
+                    })
+                }
+                else if (action=="update"){
+                    await additiveController.update(content.id, content)
+                    .then(result=>{
+                        console.log(result)
+                    })
+                }
+                else if (action=="remove"){
+                    await additiveController.remove(content.id)
                     .then(result=>{
                         console.log(result)
                     })
