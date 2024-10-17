@@ -8,11 +8,8 @@ axios.defaults.baseURL = "https://world.openfoodfacts.net/"
 
 // fields contiene los campos que se obtendrán en la respuesta de la API de OpenFoodFacts
 // https://openfoodfacts.github.io/openfoodfacts-server/api/ref-v2/#get-/api/v2/product/-barcode-
-const fields = "id,product_name,brands,nutriments,nutrient_levels,allergens_tags,\
-                environment_impact_level,nutriscore_grade,ecoscore_grade,\
-                serving_quantity,serving_size,traces_tags"
-const moreFields = "image_nutrition_url,image_url,image_packaging_url,image_ingredients_url,\
-                    nova_group,nutriscore_2023_tags,additives_tags,ingredients_text,quantity"
+const fields = "id,product_name,brands,nutriments,nutrient_levels,allergens_tags,environment_impact_level,nutriscore_grade,ecoscore_grade,serving_quantity,serving_size,traces_tags"
+const moreFields = "selected_images,nova_group,nutriscore_2023_tags,additives_tags,ingredients_text,quantity,product_name_es"
 
 
 export class FoodExternalController {
@@ -30,6 +27,10 @@ export class FoodExternalController {
                 method: "GET",
                 url: "api/v2/product/" + id + "?fields=" + fields
             })
+            if (response.data.status_verbose === "product not found"){
+                res.status(404)
+                return {message: "Error: el producto no existe"}
+            }
             let response2 = await axios({
                 method: "GET",
                 url: "api/v2/product/" + id + "?fields=" + moreFields
@@ -37,6 +38,9 @@ export class FoodExternalController {
             response.data.product.product_name
                 ? null
                 : response.data.product.product_name= "Nombre desconocido"
+            response2.data.product.product_name_es
+                ? response.data.product.product_name= response2.data.product.product_name_es
+                : null
             response2.data.product.nutriscore_2023_tags
                 ?response2.data.product.nutriscore_grade = response2.data.product.nutriscore_2023_tags[0]
                 :null
@@ -55,11 +59,11 @@ export class FoodExternalController {
                 additiveFinal.push(additive.name + "," + additive.wikidata)
             }
             response.data.product.additives = additiveFinal
-            console.log(response.data)
             return response.data
         } catch (error){
-            console.log(error)
-            return false
+            console.log(error.response)
+            res.status(error.response.status)
+            return {message: error.response.statusText}
         }
         
     }

@@ -7,7 +7,9 @@ import * as amqp from "amqplib/callback_api"
 import { Channel } from "amqplib"
 import { UserRatesFoodController } from "./controller/UserRatesFoodController"
 import { AdditiveController } from "./controller/AdditiveController"
+import { FoodLocalController } from "./controller/FoodLocalController"
 import { Additive } from "./entity/Additive"
+import { Allergen } from "./entity/Allergen"
 
 AppDataSource.initialize().then(async () => {
     amqp.connect('amqps://zqjaujdb:XeTIDvKuWz8bHL5DHdJ9iq6e4CqkfqTh@gull.rmq.cloudamqp.com/zqjaujdb', (error0, connection) => {
@@ -21,6 +23,7 @@ AppDataSource.initialize().then(async () => {
             }
             const userRatesFoodController = new UserRatesFoodController
             const additiveController = new AdditiveController
+            const foodLocalController = new FoodLocalController
             
             channel.assertExchange("FoodProfile", "topic", {durable: false})
 
@@ -34,8 +37,8 @@ AppDataSource.initialize().then(async () => {
             channel.assertQueue("FoodProfile_Accounts", {durable: false})
             channel.bindQueue("FoodProfile_Accounts", "Accounts", "user.*")
 
-            channel.assertQueue("FoodProfile_FoodLocal", {durable: false})
-            channel.bindQueue("FoodProfile_FoodLocal", "FoodEdit", "food-local.*")
+            channel.assertQueue("FoodProfile_FoodEdit", {durable: false})
+            channel.bindQueue("FoodProfile_FoodEdit", "FoodEdit", "food-local.*")
 
             channel.assertQueue("FoodProfile_Additive", {durable: false})
             channel.bindQueue("FoodProfile_Additive", "FoodEdit", "additive.*")
@@ -67,13 +70,13 @@ AppDataSource.initialize().then(async () => {
                 let action = msg.fields.routingKey.split(".")[1]
                 let content = JSON.parse(msg.content.toString())
                 if (action=="save"){
-                    await userRatesFoodController.create(content)
+                    await userRatesFoodController.saveAlt(content)
                     .then(result=>{
                         console.log(result)
                     })
                 }
                 else if (action=="removeOne"){
-                    await userRatesFoodController.remove(content.userId, content.foodLocalId)
+                    await userRatesFoodController.removeAlt(content.userId, content.foodLocalId)
                     .then(result=>{
                         console.log(result)
                     })
@@ -125,6 +128,23 @@ AppDataSource.initialize().then(async () => {
                 }
             }, {noAck: true})
 
+            channel.consume("FoodProfile_FoodEdit", async (msg)=>{
+                let action = msg.fields.routingKey.split(".")[1]
+                let content = JSON.parse(msg.content.toString())
+                if (action=="update"){
+                    await foodLocalController.updateSimple(content)
+                    .then(result=>{
+                        console.log(result)
+                    })
+                }
+                else if (action === "new"){
+                    await foodLocalController.saveSimple(content)
+                    .then(result=>{
+                        console.log(result)
+                    })
+                }
+            }, {noAck: true})
+
             // setup express app here
 
             // ******************* Poblado de la tabla de aditivos *****************
@@ -150,6 +170,21 @@ AppDataSource.initialize().then(async () => {
             //         wikidata: wikidata
             //     }
             //     additiveRepo.save(newAdditive)
+            // }
+
+            // ******************* Poblado de la tabla de alérgenos *****************
+            
+            // const allergen = require('../allergen.json')
+            // const allergenRepo = AppDataSource.getRepository(Allergen)
+            // for (const [code, value] of Object.entries(allergen)){
+            //     let name = value["name"]["es"]?value["name"]["es"]:value["name"]["en"]
+            //     let wikidata = value["wikidata"]?value["wikidata"]["en"]:null
+            //     let newAllergen = {
+            //         id: code,
+            //         name: name,
+            //         wikidata: wikidata
+            //     }
+            //     allergenRepo.save(newAllergen)
             // }
             
             // start express server

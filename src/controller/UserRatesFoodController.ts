@@ -6,8 +6,12 @@ export class UserRatesFoodController {
 
     private UserRatesFoodRepository = AppDataSource.getRepository(UserRatesFood)
 
-    async all(res: Response) {
-        return this.UserRatesFoodRepository.find()
+    async all(req: Request, res: Response) {
+        const { u } = req.query
+        if (u){
+            return this.UserRatesFoodRepository.find({where: {userId: u}, relations: ["foodLocal"]})
+        }
+        return this.UserRatesFoodRepository.find({relations: ["foodLocal"]})
     }
     //one(userId: string, foodLocalId: string)
     // entradas: userId: id del usuario
@@ -60,19 +64,21 @@ export class UserRatesFoodController {
         return ratings
     }
     // agregar o actualizar registro.
-    async create(userRate) {
+    async create(req:Request, res: Response) {
+        const {userId, foodLocalId, rating} = req.body
+        console.log(userId, foodLocalId, rating)
         const oldUserRate = await this.UserRatesFoodRepository.findOne({ where: 
-            {userId: userRate.userId, 
-            foodLocalId: userRate.foodLocalId,
-            rating: userRate.rating
+            {userId: userId, 
+            foodLocalId: foodLocalId,
+            rating: rating
         }})
         if (oldUserRate){
             console.log("ya existe", oldUserRate)
             return []
         }
         else {
-            console.log("n oexistia")
-            const newUserRate = await this.UserRatesFoodRepository.save(userRate)
+            console.log("no existia")
+            const newUserRate = await this.UserRatesFoodRepository.save({userId, foodLocalId, rating})
                 if (!newUserRate){
                     return []
                 }
@@ -81,14 +87,16 @@ export class UserRatesFoodController {
         
     }
     // eliminar un registro por id de usuario e id de alimento
-    async remove(userId: string, foodLocalId) {
+    async remove(req: Request, res: Response) {
+        const {foodLocalId, userId} = req.params
         let userRateToRemove = await this.UserRatesFoodRepository.find({ where: {foodLocalId: foodLocalId, userId: userId }})
 
-        if (userRateToRemove === undefined || userRateToRemove.length == 0) {
-            return undefined
+        if (!userRateToRemove || userRateToRemove.length == 0) {
+            res.status(404)
+            return {message:"Error: Registro no existe"}
         }
 
-        return this.UserRatesFoodRepository.delete({userId: userId, foodLocalId: foodLocalId})
+        return this.UserRatesFoodRepository.remove(userRateToRemove)
     }
     // eliminar todos los registros de un alimento
     async removeByFood(id: string, res: Response) {
@@ -108,6 +116,21 @@ export class UserRatesFoodController {
 
         if (userRateToRemove === undefined || userRateToRemove.length == 0) {
             return undefined
+        }
+
+        return this.UserRatesFoodRepository.remove(userRateToRemove)
+    }
+
+    async saveAlt(req: any){
+        const {userId, foodLocalId, rating} = req
+        return this.UserRatesFoodRepository.save({userId, foodLocalId, rating})
+    }
+
+    async removeAlt(userId: string, foodLocalId: string){
+        let userRateToRemove = await this.UserRatesFoodRepository.find({ where: {foodLocalId: foodLocalId, userId: userId }})
+
+        if (!userRateToRemove || userRateToRemove.length == 0) {
+            return "Error: Registro no existe"
         }
 
         return this.UserRatesFoodRepository.remove(userRateToRemove)

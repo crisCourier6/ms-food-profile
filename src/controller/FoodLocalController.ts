@@ -10,22 +10,131 @@ export class FoodLocalController {
     //all()
     // entradas:
     // salidas: Array con todas las filas de la tabla food_local
-    async all(res: Response) {
-        return this.foodLocalRepository.find()
+    async all(req:Request, res: Response) {
+        const {u, ca, la, search, id, wu} = req.query;
+        const wr = req.query.wr === "true";
+        let containsAllergens = undefined
+        let lacksAllergens = undefined
+        if (ca){
+            containsAllergens = ca.split(",")
+        }
+        if (la){
+            lacksAllergens = la.split(",")
+        }
+        const queryBuilder = this.foodLocalRepository.createQueryBuilder("foodLocal");
+
+        if (u) {
+            queryBuilder.leftJoinAndSelect(
+                "foodLocal.userRatesFood",
+                "userRatesFood"
+            )
+            .andWhere("userRatesFood.userId = :u", { u }); // Apply the user filter
+        }
+
+        if (search) {
+            console.log("search: ", search)
+            queryBuilder.andWhere("foodLocal.name ILIKE :search", { search: `%${search}%` });
+        }
+    
+        if (id) {
+            queryBuilder.andWhere("foodLocal.id = :id", { id });
+        }
+
+        // Check for containsAllergens
+        if (containsAllergens) {
+            queryBuilder.andWhere(
+                `EXISTS (
+                    SELECT 1 FROM jsonb_array_elements_text("foodLocal"."foodData"->'allergens_tags') allergen
+                    WHERE allergen IN (:...containsAllergens)
+                )OR EXISTS (
+                    SELECT 1 FROM jsonb_array_elements_text("foodLocal"."foodData"->'traces_tags') trace
+                    WHERE trace IN (:...containsAllergens)
+                )`
+            ).setParameter("containsAllergens", containsAllergens);
+        }
+
+        // Check for lacksAllergens
+        if (lacksAllergens) {
+            queryBuilder.andWhere(
+                `NOT EXISTS (
+                    SELECT 1 FROM jsonb_array_elements_text("foodLocal"."foodData"->'allergens_tags') allergen
+                    WHERE allergen IN (:...lacksAllergens)
+                )AND NOT EXISTS (
+                    SELECT 1 FROM jsonb_array_elements_text("foodLocal"."foodData"->'traces_tags') trace
+                    WHERE trace IN (:...lacksAllergens)
+                )`
+            ).setParameter("lacksAllergens", lacksAllergens);
+        }
+
+        if (wr) {
+            // Count 'likes' where rating is 'likes'
+            queryBuilder.loadRelationCountAndMap(
+                "foodLocal.likes", 
+                "foodLocal.userRatesFood", 
+                "userRatesFood", 
+                (qb) => qb.andWhere("userRatesFood.rating = 'likes'")
+            );
+
+            // Count 'dislikes' where rating is 'dislikes'
+            queryBuilder.loadRelationCountAndMap(
+                "foodLocal.dislikes", 
+                "foodLocal.userRatesFood", 
+                "userRatesFood", 
+                (qb) => qb.andWhere("userRatesFood.rating = 'dislikes'")
+            );
+        }
+        // Apply the wu filter (show only this user's rating)
+        if (wu) {
+            queryBuilder.leftJoinAndSelect(
+                "foodLocal.userRatesFood",
+                "userRatesFoodForWu",
+                "userRatesFoodForWu.userId = :wu"
+            ).setParameter("wu", wu);
+        }
+
+        return queryBuilder.getMany();
     }
     //one(id: string)
     // entradas: id: id del alimento que se quiere encontrar
     // salidas: undefined - si es que no se encuentra el alimento
     //          foodlocal - alimento 
-    async one(id: string, res: Response) {
-        const foodLocal = await this.foodLocalRepository.findOne({
-            where: { id: id }
-        })
-
-        if (!foodLocal) {
-            return undefined
+    async one(req: Request, res: Response) {
+        const { u } = req.query;
+        const { id } = req.params;
+        const wr = req.query.wr === "true";
+    
+        const queryBuilder = this.foodLocalRepository.createQueryBuilder("foodLocal")
+            .where("foodLocal.id = :id", { id }); // Find by ID
+    
+        if (u) {
+            // Join userRatesFood when u is provided (filtering by userId)
+            queryBuilder.leftJoinAndSelect(
+                "foodLocal.userRatesFood",
+                "userRatesFood",
+                "userRatesFood.userId = :u",
+                { u }
+            );
         }
-        return foodLocal
+    
+        if (wr) {
+            // Count 'likes' where rating is 'likes'
+            queryBuilder.loadRelationCountAndMap(
+                "foodLocal.likes", 
+                "foodLocal.userRatesFood", 
+                "userRatesFood", 
+                (qb) => qb.andWhere("userRatesFood.rating = 'likes'")
+            );
+    
+            // Count 'dislikes' where rating is 'dislikes'
+            queryBuilder.loadRelationCountAndMap(
+                "foodLocal.dislikes", 
+                "foodLocal.userRatesFood", 
+                "userRatesFood", 
+                (qb) => qb.andWhere("userRatesFood.rating = 'dislikes'")
+            );
+        }
+
+        return queryBuilder.getOne();
     }
     //getAllByIds(ids:any)
     // entradas: ids: Array con id de alimentos que se quieren encontrar
@@ -64,7 +173,32 @@ export class FoodLocalController {
             product_name: string
             brands: string
             quantity: string
-            image_url: string
+            selected_images: {
+                front: {
+                    display: {
+                        en?:string,
+                        es?:string
+                    }
+                },
+                ingredients: {
+                    display: {
+                        en?:string,
+                        es?:string
+                    }
+                },
+                nutrition: {
+                    display: {
+                        en?:string,
+                        es?:string
+                    }
+                },
+                packaging: {
+                    display: {
+                        en?:string,
+                        es?:string
+                    }
+                }
+            }
         }
 
         const newFood = foodExternal.product as foodValues
@@ -77,12 +211,12 @@ export class FoodLocalController {
             fullname = fullname + " - " + newFood.quantity
         }
 
-        let foodData = JSON.stringify(foodExternal.product)
-            
+        // let foodData = JSON.stringify(foodExternal.product)
+        let foodData = foodExternal.product
         const foodLocal = Object.assign(new FoodLocal(), {
             id: newFood.id,
             name: fullname,
-            picture: newFood.image_url,
+            picture: newFood.selected_images? newFood.selected_images.front.display.en || newFood.selected_images.front.display.es:undefined,
             foodData: foodData
         })
 
@@ -121,6 +255,18 @@ export class FoodLocalController {
         const removedFood = await this.foodLocalRepository.remove(foodLocalToRemove)
 
         return removedFood
+    }
+
+    async updateSimple(req: any) {
+        const {id, ...foodLocal} = req
+        if (!id) {
+            return "id inválida"
+        }
+       return this.foodLocalRepository.update(id, foodLocal)
+    }
+
+    async saveSimple(req: any) {
+       return this.foodLocalRepository.save(req)
     }
 
 }

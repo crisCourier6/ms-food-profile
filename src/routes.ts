@@ -35,7 +35,7 @@ export const Routes = [
     }, 
     {
         method: "get",
-        route: "/food/ratings/byuserandfood/:foodLocalId/:userId",
+        route: "/food/ratings/byuserandfood/:userId/:foodLocalId",
         controller: MainController,
         action: "userRatesFoodOne"
     }, 
@@ -78,8 +78,14 @@ export const Routes = [
     // open food facts
     {
         method: "get",
-        route: "/food/external/:foodExternalId",
+        route: "/food/external/:id",
         controller: MainController,
         action: "foodExternalOne"
+    }, 
+    {
+        method: "get",
+        route: "/food/allergens",
+        controller: MainController,
+        action: "allergensAll"
     }, 
 ]

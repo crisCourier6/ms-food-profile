@@ -3,6 +3,8 @@ import { FoodLocalController } from "./FoodLocalController"
 import { UserRatesFoodController } from "./UserRatesFoodController"
 import { FoodExternalController } from "./FoodExternalController"
 import { Channel } from "amqplib"
+import { FoodLocal } from "../entity/FoodLocal"
+import { AllergenController } from "./AllergenController"
 
 
 export class MainController{
@@ -10,12 +12,19 @@ export class MainController{
     private foodLocalController = new FoodLocalController
     private userRatesFoodController = new UserRatesFoodController
     private foodExternalController = new FoodExternalController
+    private allergenController = new AllergenController
     // food local
     async foodLocalAll(request: Request, response: Response, next: NextFunction, channel:Channel) {
-        return this.foodLocalController.all(response)
+        let foods = await this.foodLocalController.all(request, response) as FoodLocal[]
+        foods = foods.filter(food => food !== null)
+        //cuando se quiera llenar tablas en otros microservicios
+        // foods.forEach(food => {
+        //     channel.publish("FoodProfile", "food-local.save", Buffer.from(JSON.stringify(food)))
+        // })
+        return foods
     }
     async foodLocalOne(request: Request, response: Response, next: NextFunction, channel:Channel) {
-        return this.foodLocalController.one(request.params.id, response)
+        return this.foodLocalController.one(request, response)
     }
     async foodLocalSaveLocal(request: Request, response: Response, next: NextFunction, channel:Channel) {
         return this.foodLocalController.saveLocal(request.body, response)
@@ -37,7 +46,7 @@ export class MainController{
     }
     // user rates food
     async userRatesFoodAll(request: Request, response: Response, next: NextFunction, channel:Channel) {
-        return this.userRatesFoodController.all(response)
+        return this.userRatesFoodController.all(request, response)
     }
     async userRatesFoodAllByUser(request: Request, response: Response, next: NextFunction, channel:Channel) {
         return this.userRatesFoodController.byUser(request.params.userId, response)
@@ -49,7 +58,7 @@ export class MainController{
         })
     }
     async userRatesFoodSave(request: Request, response: Response, next: NextFunction, channel:Channel) {
-        await this.userRatesFoodController.create(request.body)
+        await this.userRatesFoodController.create(request, response)
         .then(result => {
             if (result){
                 channel.publish("FoodProfile", "user-rates-food.save", Buffer.from(JSON.stringify(request.body)))
@@ -62,13 +71,10 @@ export class MainController{
         
     }
     async userRatesFoodRemove(request: Request, response: Response, next: NextFunction, channel:Channel){
-        await this.userRatesFoodController.remove(request.params.userId, request.params.foodLocalId)
+        await this.userRatesFoodController.remove(request, response)
         .then(result => {
-            if (result){
+            if (response.statusCode<400){
                 channel.publish("FoodProfile", "user-rates-food.removeOne", Buffer.from(JSON.stringify(request.params)))
-            }
-            else{
-                response.status(400)
             }
             response.send(result)
         })
@@ -84,16 +90,35 @@ export class MainController{
     }
     // open food facts
     async foodExternalOne(request: Request, response: Response, next: NextFunction, channel:Channel){
-        const food = await this.foodExternalController.one(request.params.foodExternalId, response)
-        await this.foodLocalController.save(request.params.foodExternalId, food, response)
-        .then(result => {
-            if (result){
-                channel.publish("FoodProfile", "food-local.save", Buffer.from(JSON.stringify(result)))
+        try {
+            const food = await this.foodExternalController.one(request.params.id, response);
+    
+            // If the response status code is 400 or higher, return early
+            if (response.statusCode >= 400) {
+                return food
             }
-            else{
-                response.status(400)
+    
+            const result = await this.foodLocalController.save(request.params.id, food, response);
+    
+            if (result) {
+                // Publish the result to the channel
+                channel.publish("FoodProfile", "food-local.save", Buffer.from(JSON.stringify(result)));
+    
+                // Await the result of foodLocalOne and send it
+                return this.foodLocalOne(request, response, next, channel);
+            } else {
+                // Handle the case where save operation fails
+                response.status(400);
+                return response.send(result);
             }
-            response.send(food)
-        })
+        } catch (error) {
+            // Handle any unexpected errors
+            console.error(error);
+            response.status(500).send({ error: "Server error" });
+        }
+    }
+    // allergen
+    async allergensAll(request: Request, response: Response, next: NextFunction, channel: Channel) {
+        return this.allergenController.all()
     }
 }
