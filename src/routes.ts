@@ -4,87 +4,87 @@ export const Routes = [
     // food local
     {
         method: "get",
-        route: "/food/local",
+        route: "/api/v1/food/local",
         controller: MainController,
         action: "foodLocalAll"
     }, 
     {
         method: "get",
-        route: "/food/local/:id",
+        route: "/api/v1/food/local/:id",
         controller: MainController,
         action: "foodLocalOne"
     }, 
     {
         method: "post",
-        route: "/food/local/",
+        route: "/api/v1/food/local/",
         controller: MainController,
         action: "foodLocalSaveLocal"
     }, 
     {
         method: "delete",
-        route: "/food/local/:foodLocalId",
+        route: "/api/v1/food/local/:foodLocalId",
         controller: MainController,
         action: "foodLocalRemove"
     },
     // user rates food
     {
         method: "get",
-        route: "/food/ratings",
+        route: "/api/v1/food/ratings",
         controller: MainController,
         action: "userRatesFoodAll"
     }, 
     {
         method: "get",
-        route: "/food/ratings/byuserandfood/:userId/:foodLocalId",
+        route: "/api/v1/food/ratings/byuserandfood/:userId/:foodLocalId",
         controller: MainController,
         action: "userRatesFoodOne"
     }, 
     {
         method: "get",
-        route: "/food/ratings/byuser/:userId",
+        route: "/api/v1/food/ratings/byuser/:userId",
         controller: MainController,
         action: "userRatesFoodAllByUser"
     }, 
     {
         method: "post",
-        route: "/food/ratings",
+        route: "/api/v1/food/ratings",
         controller: MainController,
         action: "userRatesFoodSave"
     }, 
     {
         method: "delete",
-        route: "/food/ratings/byuserandfood/:foodLocalId/:userId",
+        route: "/api/v1/food/ratings/byuserandfood/:foodLocalId/:userId",
         controller: MainController,
         action: "userRatesFoodRemove"
     },
     {
         method: "delete",
-        route: "/food/ratings/byuser/:userId",
+        route: "/api/v1/food/ratings/byuser/:userId",
         controller: MainController,
         action: "userRatesFoodRemoveByUser"
     },
     {
         method: "delete",
-        route: "/food/ratings/byfood/:foodLocalId",
+        route: "/api/v1/food/ratings/byfood/:foodLocalId",
         controller: MainController,
         action: "userRatesFoodRemoveByFood"
     },
     {
         method: "get",
-        route: "/food/ratings/byfood/:foodLocalId",
+        route: "/api/v1/food/ratings/byfood/:foodLocalId",
         controller: MainController,
         action: "userRatesFoodRatingsByFood"
     }, 
     // open food facts
     {
         method: "get",
-        route: "/food/external/:id",
+        route: "/api/v1/food/external/:id",
         controller: MainController,
         action: "foodExternalOne"
     }, 
     {
         method: "get",
-        route: "/food/allergens",
+        route: "/api/v1/food/allergens",
         controller: MainController,
         action: "allergensAll"
     }, 
