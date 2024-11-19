@@ -4,7 +4,7 @@ import { Response, Request } from "express"
 import { Additive } from "../entity/Additive"
 import "dotenv/config"
 
-axios.defaults.baseURL = "https://world.openfoodfacts.net/"
+axios.defaults.baseURL = "https://world.openfoodfacts.org/"
 
 // fields contiene los campos que se obtendrán en la respuesta de la API de OpenFoodFacts
 // https://openfoodfacts.github.io/openfoodfacts-server/api/ref-v2/#get-/api/v2/product/-barcode-

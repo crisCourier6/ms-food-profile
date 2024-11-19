@@ -177,25 +177,29 @@ export class FoodLocalController {
                 front: {
                     display: {
                         en?:string,
-                        es?:string
+                        es?:string,
+                        fr?:string
                     }
                 },
                 ingredients: {
                     display: {
                         en?:string,
-                        es?:string
+                        es?:string,
+                        fr?:string
                     }
                 },
                 nutrition: {
                     display: {
                         en?:string,
-                        es?:string
+                        es?:string,
+                        fr?:string
                     }
                 },
                 packaging: {
                     display: {
                         en?:string,
-                        es?:string
+                        es?:string,
+                        fr?:string
                     }
                 }
             }
@@ -216,7 +220,7 @@ export class FoodLocalController {
         const foodLocal = Object.assign(new FoodLocal(), {
             id: newFood.id,
             name: fullname,
-            picture: newFood.selected_images? newFood.selected_images.front.display.en || newFood.selected_images.front.display.es:undefined,
+            picture: newFood.selected_images? newFood.selected_images.front.display.en || newFood.selected_images.front.display.es || newFood.selected_images.front.display.fr:undefined,
             foodData: foodData
         })
 
