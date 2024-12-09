@@ -35,10 +35,22 @@ export class FoodExternalController {
                 method: "GET",
                 url: "api/v2/product/" + id + "?fields=" + moreFields
             })
-            response.data.product.product_name ? null : response.data.product.product_name= "Nombre desconocido"
-            response2.data.product.product_name_es ? response.data.product.product_name= response2.data.product.product_name_es : null
-            response2.data.product.nutriscore_2023_tags ?response2.data.product.nutriscore_grade = response2.data.product.nutriscore_2023_tags[0] :null
-            response2.data.product.nova_group ? null : response2.data.product.nova_group = response.data.product.nutriments["nova-group"]
+            let product_name = response.data.product.product_name
+            let product_name_es = response2.data.product.product_name_es
+            let nutriscore_2023_tags =  response2.data.product.nutriscore_2023_tags
+            let nova_group = response2.data.product.nova_group
+            if (!product_name){
+                response.data.product.product_name = "Nombre desconocido"
+            }
+            if (product_name_es){
+                response.data.product.product_name = product_name_es
+            }
+            if (nutriscore_2023_tags) {
+                response2.data.product.nutriscore_grade = nutriscore_2023_tags[0]
+            }
+            if (!nova_group) {
+                response2.data.product.nova_group = response.data.product.nutriments["nova-group"]
+            }
             response.data.product = {...response.data.product, ...response2.data.product}
             let additiveList = []
             response.data.product.additives_tags ? additiveList = response.data.product.additives_tags : null
