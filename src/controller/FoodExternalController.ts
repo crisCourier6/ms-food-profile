@@ -53,7 +53,10 @@ export class FoodExternalController {
             }
             response.data.product = {...response.data.product, ...response2.data.product}
             let additiveList = []
-            response.data.product.additives_tags ? additiveList = response.data.product.additives_tags : null
+            let additives_tags = response.data.product.additives_tags
+            if (additives_tags){
+                additiveList = additives_tags
+            }
             let additiveFinal = []
             for (var additiveCode of additiveList){
                 console.log(additiveCode)
