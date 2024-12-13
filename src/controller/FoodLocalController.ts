@@ -33,7 +33,10 @@ export class FoodLocalController {
 
         if (search) {
             console.log("search: ", search)
-            queryBuilder.andWhere("foodLocal.name ILIKE :search", { search: `%${search}%` });
+            queryBuilder.andWhere(
+                `unaccent(foodLocal.name) ILIKE unaccent(:search)`,
+                { search: `%${search}%` }
+            );
         }
     
         if (id) {
