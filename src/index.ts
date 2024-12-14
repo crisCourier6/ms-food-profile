@@ -188,11 +188,11 @@ AppDataSource.initialize().then(async () => {
             // }
             
             // start express server
-            app.listen(3001)
+            app.listen(process.env.PORT)
 
             // insert new users for test
 
-            console.log("Express server has started on port 3001. Open http://localhost:3001/foodlocal to see results")
+            console.log(`Express server has started on port ${process.env.PORT}. Open http://localhost:${process.env.PORT}/foodlocal to see results`)
             process.on("beforeExit", ()=>{
                 console.log("closing")
                 connection.close()
