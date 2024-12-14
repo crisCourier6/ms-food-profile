@@ -53,7 +53,7 @@ export const Routes = [
     }, 
     {
         method: "delete",
-        route: "/food/ratings/byuserandfood/:foodLocalId/:userId",
+        route: "/food/ratings/byuserandfood/:userId/:foodLocalId",
         controller: MainController,
         action: "userRatesFoodRemove"
     },

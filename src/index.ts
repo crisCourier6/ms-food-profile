@@ -12,7 +12,7 @@ import { Additive } from "./entity/Additive"
 import { Allergen } from "./entity/Allergen"
 
 AppDataSource.initialize().then(async () => {
-    amqp.connect('amqps://zqjaujdb:XeTIDvKuWz8bHL5DHdJ9iq6e4CqkfqTh@gull.rmq.cloudamqp.com/zqjaujdb', (error0, connection) => {
+    amqp.connect(process.env.RABBITMQ_URL, (error0, connection) => {
         if(error0){
             throw error0
         }
@@ -188,11 +188,11 @@ AppDataSource.initialize().then(async () => {
             // }
             
             // start express server
-            app.listen(3001)
+            app.listen(process.env.PORT)
 
             // insert new users for test
 
-            console.log("Express server has started on port 3001. Open http://localhost:3001/foodlocal to see results")
+            console.log(`Express server has started on port ${process.env.PORT}. Open http://localhost:${process.env.PORT}/foodlocal to see results`)
             process.on("beforeExit", ()=>{
                 console.log("closing")
                 connection.close()
