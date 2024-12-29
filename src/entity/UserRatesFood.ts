@@ -14,6 +14,9 @@ export class UserRatesFood {
     @Column()
     rating: string
 
+    @Column({default: true})
+    isSaved: boolean
+
     @ManyToOne(()=>FoodLocal, foodLocal => foodLocal.userRatesFood, {onDelete: "CASCADE"})
     @JoinColumn({name: "foodLocalId"})
     foodLocal: FoodLocal

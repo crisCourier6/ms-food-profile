@@ -9,7 +9,7 @@ axios.defaults.baseURL = "https://world.openfoodfacts.org/"
 // fields contiene los campos que se obtendrán en la respuesta de la API de OpenFoodFacts
 // https://openfoodfacts.github.io/openfoodfacts-server/api/ref-v2/#get-/api/v2/product/-barcode-
 const fields = "id,product_name,brands,nutriments,nutrient_levels,allergens_tags,environment_impact_level,nutriscore_grade,ecoscore_grade,serving_quantity,serving_size,traces_tags"
-const moreFields = "selected_images,nova_group,nutriscore_2023_tags,additives_tags,ingredients_text,quantity,product_name_es"
+const moreFields = "selected_images,nova_group,nutriscore_2023_tags,additives_tags,ingredients_text,quantity,product_name_es,ingredients_analysis_tags"
 
 
 export class FoodExternalController {
@@ -35,6 +35,7 @@ export class FoodExternalController {
                 method: "GET",
                 url: "api/v2/product/" + id + "?fields=" + moreFields
             })
+            delete response2.data.product.additives
             let product_name = response.data.product.product_name
             let product_name_es = response2.data.product.product_name_es
             let nutriscore_2023_tags =  response2.data.product.nutriscore_2023_tags

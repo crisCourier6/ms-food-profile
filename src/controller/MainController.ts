@@ -13,10 +13,11 @@ export class MainController{
     private userRatesFoodController = new UserRatesFoodController
     private foodExternalController = new FoodExternalController
     private allergenController = new AllergenController
+    
     // food local
     async foodLocalAll(request: Request, response: Response, next: NextFunction, channel:Channel) {
-        let foods = await this.foodLocalController.all(request, response) as FoodLocal[]
-        foods = foods.filter(food => food !== null)
+        let foods = await this.foodLocalController.all(request, response)
+        //foods = foods.resultsfilter(food => food !== null)
         //cuando se quiera llenar tablas en otros microservicios
         // foods.forEach(food => {
         //     channel.publish("FoodProfile", "food-local.save", Buffer.from(JSON.stringify(food)))
@@ -98,14 +99,16 @@ export class MainController{
                 return food
             }
     
-            const result = await this.foodLocalController.save(request.params.id, food, response);
+            const result = await this.foodLocalController.save(food);
     
             if (result) {
+                const fullFood = await this.foodLocalOne(request, response, next, channel)
                 // Publish the result to the channel
-                channel.publish("FoodProfile", "food-local.save", Buffer.from(JSON.stringify(result)));
+                console.log("full_food: ", fullFood)
+                channel.publish("FoodProfile", "food-local.save", Buffer.from(JSON.stringify(fullFood)));
     
                 // Await the result of foodLocalOne and send it
-                return this.foodLocalOne(request, response, next, channel);
+                return fullFood
             } else {
                 // Handle the case where save operation fails
                 response.status(400);

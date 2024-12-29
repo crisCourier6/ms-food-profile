@@ -9,7 +9,7 @@ export class UserRatesFoodController {
     async all(req: Request, res: Response) {
         const { u } = req.query
         if (u){
-            return this.UserRatesFoodRepository.find({where: {userId: u}, relations: ["foodLocal"]})
+            return this.UserRatesFoodRepository.find({where: {userId: u, isSaved: true}, relations: ["foodLocal"]})
         }
         return this.UserRatesFoodRepository.find({relations: ["foodLocal"]})
     }
@@ -45,7 +45,7 @@ export class UserRatesFoodController {
     // Registros de un usuario en específico
     async byUser(id: string, res: Response){
         const userRate = await this.UserRatesFoodRepository.find({
-            where: { userId: id }
+            where: { userId: id, isSaved: true }
         })
         console.log(userRate)
         if (userRate === undefined || userRate.length == 0){
@@ -89,11 +89,14 @@ export class UserRatesFoodController {
     // eliminar un registro por id de usuario e id de alimento
     async remove(req: Request, res: Response) {
         const {foodLocalId, userId} = req.params
-        let userRateToRemove = await this.UserRatesFoodRepository.find({ where: {foodLocalId: foodLocalId, userId: userId }})
+        let userRateToRemove = await this.UserRatesFoodRepository.findOne({ where: {foodLocalId: foodLocalId, userId: userId }})
 
-        if (!userRateToRemove || userRateToRemove.length == 0) {
+        if (!userRateToRemove) {
             res.status(404)
             return {message:"Error: Registro no existe"}
+        }
+        if (userRateToRemove.isSaved && userRateToRemove.rating!=="neutral"){
+            return this.UserRatesFoodRepository.save({userId, foodLocalId, isSaved: false})
         }
 
         return this.UserRatesFoodRepository.remove(userRateToRemove)

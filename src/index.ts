@@ -10,6 +10,7 @@ import { AdditiveController } from "./controller/AdditiveController"
 import { FoodLocalController } from "./controller/FoodLocalController"
 import { Additive } from "./entity/Additive"
 import { Allergen } from "./entity/Allergen"
+import { FoodLocal } from "./entity/FoodLocal"
 
 AppDataSource.initialize().then(async () => {
     amqp.connect(process.env.RABBITMQ_URL, (error0, connection) => {
@@ -131,14 +132,14 @@ AppDataSource.initialize().then(async () => {
             channel.consume("FoodProfile_FoodEdit", async (msg)=>{
                 let action = msg.fields.routingKey.split(".")[1]
                 let content = JSON.parse(msg.content.toString())
-                if (action=="update"){
-                    await foodLocalController.updateSimple(content)
+                if (action=="save"){
+                    await foodLocalController.saveSimple(content as FoodLocal)
                     .then(result=>{
                         console.log(result)
                     })
                 }
                 else if (action === "new"){
-                    await foodLocalController.saveSimple(content)
+                    await foodLocalController.saveSimple(content as FoodLocal)
                     .then(result=>{
                         console.log(result)
                     })
