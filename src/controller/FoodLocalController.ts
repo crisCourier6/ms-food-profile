@@ -1,5 +1,5 @@
 import { AppDataSource } from "../data-source"
-import { NextFunction, Request, Response } from "express"
+import { Request, Response } from "express"
 import { FoodLocal } from "../entity/FoodLocal"
 import { In } from "typeorm"
 import { Allergen } from "../entity/Allergen"
@@ -9,11 +9,11 @@ import { FoodHasAdditive } from "../entity/FoodHasAdditive"
 
 export class FoodLocalController {
 
-    private foodLocalRepository = AppDataSource.getRepository(FoodLocal)
-    private allergenRepository = AppDataSource.getRepository(Allergen)
-    private additiveRepository = AppDataSource.getRepository(Additive)
-    private foodHasAllergenRepository = AppDataSource.getRepository(FoodHasAllergen)
-    private foodHasAdditiveRepository = AppDataSource.getRepository(FoodHasAdditive)
+    private readonly foodLocalRepository = AppDataSource.getRepository(FoodLocal)
+    private readonly allergenRepository = AppDataSource.getRepository(Allergen)
+    private readonly additiveRepository = AppDataSource.getRepository(Additive)
+    private readonly foodHasAllergenRepository = AppDataSource.getRepository(FoodHasAllergen)
+    private readonly foodHasAdditiveRepository = AppDataSource.getRepository(FoodHasAdditive)
     //all()
     // entradas:
     // salidas: Array con todas las filas de la tabla food_local

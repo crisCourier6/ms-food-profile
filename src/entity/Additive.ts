@@ -1,5 +1,4 @@
 import { Entity, PrimaryColumn, Column, OneToMany } from "typeorm"
-import { UserRatesFood } from "./UserRatesFood"
 import { FoodHasAdditive } from "./FoodHasAdditive"
 
 @Entity()

@@ -3,16 +3,15 @@ import { FoodLocalController } from "./FoodLocalController"
 import { UserRatesFoodController } from "./UserRatesFoodController"
 import { FoodExternalController } from "./FoodExternalController"
 import { Channel } from "amqplib"
-import { FoodLocal } from "../entity/FoodLocal"
 import { AllergenController } from "./AllergenController"
 
 
 export class MainController{
 
-    private foodLocalController = new FoodLocalController
-    private userRatesFoodController = new UserRatesFoodController
-    private foodExternalController = new FoodExternalController
-    private allergenController = new AllergenController
+    private readonly foodLocalController = new FoodLocalController
+    private readonly userRatesFoodController = new UserRatesFoodController
+    private readonly foodExternalController = new FoodExternalController
+    private readonly allergenController = new AllergenController
     
     // food local
     async foodLocalAll(request: Request, response: Response, next: NextFunction, channel:Channel) {

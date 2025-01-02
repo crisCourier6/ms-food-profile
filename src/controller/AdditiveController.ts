@@ -1,11 +1,11 @@
 import { AppDataSource } from "../data-source"
-import { NextFunction, Request, Response } from "express"
+import { Response } from "express"
 import { Additive } from "../entity/Additive"
 import { In } from "typeorm"
 
 export class AdditiveController {
 
-    private additiveRepository = AppDataSource.getRepository(Additive)
+    private readonly additiveRepository = AppDataSource.getRepository(Additive)
 
     //all()
     // entradas:

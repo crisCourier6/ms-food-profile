@@ -13,7 +13,7 @@ const moreFields = "selected_images,nova_group,nutriscore_2023_tags,additives_ta
 
 
 export class FoodExternalController {
-    private additiveRepository = AppDataSource.getRepository(Additive)
+    private readonly additiveRepository = AppDataSource.getRepository(Additive)
     // one(id: string)
     // entrada: id: el código de barras de un producto
     // salida: json con el siguiente formato
