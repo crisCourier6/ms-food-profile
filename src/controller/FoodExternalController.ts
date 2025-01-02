@@ -59,7 +59,7 @@ export class FoodExternalController {
                 additiveList = additives_tags
             }
             let additiveFinal = []
-            for (var additiveCode of additiveList){
+            for (let additiveCode of additiveList){
                 console.log(additiveCode)
                 let additive = await this.additiveRepository.findOne({where: {id:additiveCode}})
                 additiveFinal.push(additive.name + "," + additive.wikidata)
@@ -92,9 +92,5 @@ export class FoodExternalController {
             res.status(500)
             return false
         }
-    }
-
-    async update(id: string, res: Response) {
-
     }
 }

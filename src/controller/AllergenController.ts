@@ -36,7 +36,7 @@ export class AllergenController {
     //          allergens - Array de alimentos
     async getAllbyIds(userRejectsRows: any){
         let idList = []
-        for (var row of userRejectsRows){
+        for (let row of userRejectsRows){
             idList.push(row.allergenId)
         }
         const allergens = await this.allergenRepository.find({where: {id: In(idList)}})

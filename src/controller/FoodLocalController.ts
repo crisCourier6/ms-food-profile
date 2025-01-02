@@ -519,8 +519,8 @@ export class FoodLocalController {
                             const foodHasAllergen = this.foodHasAllergenRepository.create({
                                 foodLocal: createdFoodLocal,
                                 allergen,
-                                isAllergen: oldAllergenTags.includes(allergen.id) ? true : false,
-                                isTrace: oldTracesTags.includes(allergen.id) ? true : false
+                                isAllergen: oldAllergenTags.includes(allergen.id),
+                                isTrace: oldTracesTags.includes(allergen.id)
                             });
                             await this.foodHasAllergenRepository.save(foodHasAllergen);
                         }
@@ -539,8 +539,8 @@ export class FoodLocalController {
                         const foodHasAllergen = this.foodHasAllergenRepository.create({
                             foodLocal: createdFoodLocal,
                             allergen,
-                            isAllergen: oldAllergenTags.includes(allergen.id) ? true : false,
-                            isTrace: oldTracesTags.includes(allergen.id) ? true : false
+                            isAllergen: oldAllergenTags.includes(allergen.id),
+                            isTrace: oldTracesTags.includes(allergen.id)
                         });
                         await this.foodHasAllergenRepository.save(foodHasAllergen);
                     }

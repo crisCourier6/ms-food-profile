@@ -33,7 +33,7 @@ export class AdditiveController {
     //          additives - Array de alimentos
     async getAllbyIds(userRejectsRows: any, res: Response){
         let idList = []
-        for (var row of userRejectsRows){
+        for (let row of userRejectsRows){
             idList.push(row.additiveId)
         }
         const additives = await this.additiveRepository.find({where: {id: In(idList)}})
