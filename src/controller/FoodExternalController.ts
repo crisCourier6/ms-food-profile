@@ -22,7 +22,7 @@ export class FoodExternalController {
     //          status_verbose: string (estado de la respuesta)
     //          product: {} (información solicitada del producto)}
     async one(id: string, res: Response) {
-        const TIMEOUT = 6000; // 6 seconds
+        const TIMEOUT = 8000; // 6 seconds
         try {
             let response = await axios({
                 method: "GET",
@@ -68,6 +68,8 @@ export class FoodExternalController {
                 additiveFinal.push(additive.name + "," + additive.wikidata)
             }
             response.data.product.additives = additiveFinal
+            res.status(200)
+            console.log("fui a openfoodfacts")
             return response.data
         } catch (error: any) {
             console.error(error);

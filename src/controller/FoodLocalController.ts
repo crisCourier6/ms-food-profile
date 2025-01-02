@@ -467,8 +467,8 @@ export class FoodLocalController {
                 newAdditiveTags = food.foodHasAdditive.map(additive => additive.additiveId)  
             }
             else{
-                if (food.foodData.additives){
-                    newAdditiveTags = food.foodData.additives.split(", ")
+                if (food.foodData.additives_tags){
+                    newAdditiveTags = food.foodData.additives_tags.split(", ")
                 }
             }
         }
