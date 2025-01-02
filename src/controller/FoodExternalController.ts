@@ -22,10 +22,12 @@ export class FoodExternalController {
     //          status_verbose: string (estado de la respuesta)
     //          product: {} (información solicitada del producto)}
     async one(id: string, res: Response) {
+        const TIMEOUT = 6000; // 6 seconds
         try {
             let response = await axios({
                 method: "GET",
-                url: "api/v2/product/" + id + "?fields=" + fields
+                url: "api/v2/product/" + id + "?fields=" + fields,
+                timeout: TIMEOUT
             })
             if (response.data.status_verbose === "product not found"){
                 res.status(404)
@@ -33,7 +35,8 @@ export class FoodExternalController {
             }
             let response2 = await axios({
                 method: "GET",
-                url: "api/v2/product/" + id + "?fields=" + moreFields
+                url: "api/v2/product/" + id + "?fields=" + moreFields,
+                timeout: TIMEOUT
             })
             delete response2.data.product.additives
             let product_name = response.data.product.product_name
@@ -66,10 +69,15 @@ export class FoodExternalController {
             }
             response.data.product.additives = additiveFinal
             return response.data
-        } catch (error){
-            console.log(error.response)
-            res.status(error.response.status)
-            return {message: error.response.statusText}
+        } catch (error: any) {
+            console.error(error);
+            if (error.code === "ECONNABORTED") {
+                res.status(408); // HTTP 408 Request Timeout
+                return { message: "Error: Request timed out" };
+            } else {
+                res.status(error.response?.status || 500); // Default to 500 if no status available
+                return { message: error.response?.statusText || "Internal Server Error" };
+            }
         }
         
     }

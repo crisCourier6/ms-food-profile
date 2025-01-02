@@ -95,6 +95,14 @@ export class MainController{
     
             // If the response status code is 400 or higher, return early
             if (response.statusCode >= 400) {
+                if (response.statusCode === 408){
+                    console.log("Voy a buscar el alimento localmente")
+                    const fullFood = await this.foodLocalOne(request, response, next, channel)
+                    if (fullFood){
+                        response.status(200)
+                        return fullFood
+                    }
+                }
                 return food
             }
     
