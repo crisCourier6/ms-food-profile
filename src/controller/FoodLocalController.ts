@@ -318,7 +318,7 @@ export class FoodLocalController {
         console.log("FOOOOOOOOOOOOOOOOOOOOOOD: ", createdFoodLocal)
         if (createdFoodLocal){
             if (!createdFoodLocal.hasLocalAllergens){
-                if (newFood.traces_tags || newFood.additives_tags) {
+                if (newFood.traces_tags || newFood.allergens_tags) {
                     console.log("Estoy usando datos de off")
                     const allergenUpdates: { id: string; isAllergen?: boolean; isTrace?: boolean }[] = [];
                     await this.foodHasAllergenRepository.delete({
